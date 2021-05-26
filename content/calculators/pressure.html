@@ -1,0 +1,118 @@
+---
+title: "Pressure calculations (QNH-QFE-QFF)"
+math: true
+---
+<div class="row">
+        <div class="col-md-3">
+            <!--Calculation form-->
+            <div class="card card-header border-secondary rounded">
+                    <form name="calcform" onsubmit="calculate(); return false;">
+                        <div class="form-group">
+                            <label for="pressure">As read Pressure (hPa)</label>
+                            <input required type="number" step="any" class="form-control" id="pressure"
+                                   placeholder="Pressure (hPa)">
+                        </div>
+                        <div class="form-group">
+                            <label for="temperature">Temperature ( &degC)</label>
+                            <input required type="number" step="any" class="form-control" id="temperature"
+                                   placeholder="Temperature ( &deg C)">
+                        </div>
+                        <div class="form-group">
+                            <label for="height">Barometer Height (M)</label>
+                            <input required type="number" step="any" class="form-control" id="height" value="4.65"
+                                   placeholder="AGL in Mtrs">
+                        </div>
+                        <div class="form-group">
+                            <label for="altitude">Station Altitude (M)</label>
+                            <input required type="number" step="any" class="form-control" id="altitude" value="86.35"
+                                   placeholder="AMSL in Mtrs">
+                        </div>
+                        <div class="form-group">
+                            <label for="latitude">Latitude (for QFF)</label>
+                            <input required type="number" step="any" class="form-control" id="latitude" value="52"
+                                   placeholder="Latitude in degs">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </div>
+                        <div class="form-group">
+                            <h5>QNH : <label id="qnh" datatype="number"></label> hPa</h5>
+                        </div>
+                        <div class="form-group">
+                            <h5>QFE : <label id="qfe" datatype="number"></label> hPa</h5>
+                        </div>
+                        <div class="form-group">
+                            <h5>QFF : <label id="qff" datatype="number"></label> hPa</h5>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        <!--Description of calculation-->
+        <div class="col-md-9">
+
+            <b>QFE</b>: Standard reduction calculation based on a rearrangement of the hypsometric equation;
+            <var>P<sub>s</sub></var> is the
+            measured pressure, <var>H<sub>s</sub></var> is the height of the barometer above station reference level,
+            <var>g</var> = 9.81 ms<sup>-1</sup>
+            <br><br>
+            $$QFE = P_s \left (1 + \frac{gH_s}{RT} \right)$$
+            <br>
+
+            <b>QNH</b>: ICAO describes how to calculate QNH in documents 7488 and 9837. The calculation is in two steps;
+            first the elevation in ISA that has the QFE pressure, then QNH:
+
+            <br>
+            $$H_{ISA} = 44330.77 - 11880.32 * QFE^{0.190263}$$
+            $$QNH = 1013.25 * \left (1 - 0.0065 * \frac{H_{ISA} - H}{288.15} \right )^{5.25588}$$
+            <br>
+
+            <b>QFF</b>: Calculated using the Swedish Meteorological and Hydrological Institute method:
+            <br>
+            $$QFF = QFE * e^{\frac{H * 0.034163 (1 - 0.0026373 cos\phi)}{T_1}}$$
+            <br>
+            <var>&Phi;</var> is the station latitude, <var>H</var> the elevation. <var>T<sub>1</sub></var> is a way of taking
+            account of winter inversions:
+            If <var>t</var> is the air temperature:
+
+            <br>
+            $$t<-7^\circ C \Rightarrow T_1 = 0.5 * t + 275$$
+            $$-7^\circ C < t < + 2^\circ C \Rightarrow T_1 = 0.535 * t + 275.6$$
+            $$t > + 2^\circ \Rightarrow T_1 = 1.07 * t + 274.5$$
+
+            <br><br><br>
+        </div>
+    </div>
+
+<!--The actual calculation-->
+<script>
+    function calculate() {
+        let pressure = parseFloat(document.forms['calcform']['pressure'].value);
+        let temp = parseFloat(document.forms['calcform']['temperature'].value);
+        let height = parseFloat(document.forms['calcform']['height'].value);
+        let altitude = parseFloat(document.forms['calcform']['altitude'].value);
+        let latitude = parseFloat(document.forms['calcform']['latitude'].value);
+
+        let k = 1 + (9.6 * ((Math.pow(10, -5)) * altitude) + (6 * (Math.pow(10, -9))
+                    * (Math.pow(altitude, 2))));
+
+        let qnh = pressure + ((0.022857 * altitude) + ((k - 1) * pressure) + (
+                                                    k * (pressure * ((Math.pow(10, (
+                                                    height / (18429.1 + 67.53 * temp + (
+                                                    0.003 * height)))))) - pressure)));
+
+        let qfe = pressure * (1 + ((height * 9.80665) / (287.04 * (temp + 273.15))));
+
+        let t;
+        if (temp < -7) { t = 0.5 * temp + 275 }
+        else if (temp <= 2 && temp >= -7) { t = 0.533 * temp + 275.6 }
+        else { t = 1.07 * temp + 274.5 }
+
+        let qff = qfe * (Math.pow(2.71828182, ((altitude * (0.034163 * (1 - (0.0026373 * (
+                                             Math.cos(2 * latitude)))))) / t)));
+
+        document.getElementById('qnh').innerHTML = qnh.toFixed(2);
+        document.getElementById('qfe').innerHTML = qfe.toFixed(2);
+        document.getElementById('qff').innerHTML = qff.toFixed(2);
+    }
+</script>

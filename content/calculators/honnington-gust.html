@@ -1,0 +1,132 @@
+---
+title: "Wind speed & gust (Honnington)"
+---
+<div class="row">
+    <!--Calculation form Honnington gust-->
+    <div class="col-md-5">
+        <div class="card card-header border-secondary rounded">
+                        <form name="calcform" onsubmit="calculate(); return false;">
+                            <div class="form-group">
+                                <label for="grad_wind">2000ft wind speed (kts)</label>
+                                <input required type="number" step="any" class="form-control" id="grad_wind" value="30">
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Calculate</button>
+                            </div>
+                            <div class="form-group">
+                                <h5>1200ft wind speed : <label id="wind1200" datatype="number"></label> kts</h5>
+                            </div>
+                        </form>
+
+                        <table class="table table-striped">
+                        <caption class="text-center"><p><i>Surface wind speed and gust for varying stabilities</i></p></caption>
+                          <tr>
+                            <th>Stability profile</th>
+                            <th class="text-center">Speed (kts)</th>
+                            <th class="text-center">Gust (kts)</th>
+                          </tr>
+                          <tr>
+                            <td>Steep inversion</td>
+                            <td class="text-center" id="steep_inv">-</td>
+                            <td class="text-center" id="steep_inv_gust">-</td>
+                          </tr>
+                          <tr>
+                            <td>Shallow inversion</td>
+                            <td class="text-center" id="shallow_inv">-</td>
+                            <td class="text-center" id="shallow_inv_gust">-</td>
+                          </tr>
+                          <tr>
+                            <td>SALR from surface</td>
+                            <td class="text-center" id="salr_sfc">-</td>
+                            <td class="text-center" id="salr_sfc_gust">-</td>
+                          </tr>
+                          <tr>
+                            <td>1-2 &degC / 1000ft</td>
+                            <td class="text-center" id="one_c1000">-</td>
+                            <td class="text-center" id="one_c1000_gust">-</td>
+                          </tr>
+                          <tr>
+                            <td>DALR from surface</td>
+                            <td class="text-center" id="dalr_sfc">-</td>
+                            <td class="text-center" id="dalr_sfc_gust">-</td>
+                          </tr>
+                            <tr>
+                            <td>DALR to 6000ft</td>
+                            <td class="text-center" id="dalr_6000">-</td>
+                            <td class="text-center" id="dalr_6000_gust">-</td>
+                          </tr>
+                            <tr>
+                            <td>Large CU / steep LR</td>
+                            <td class="text-center" id="large_cu">-</td>
+                            <td class="text-center" id="large_cu_gust">-</td>
+                          </tr>
+                        </table>
+                    </div>
+                </div>
+
+        <!--Description of calculation-->
+        <div class="col-md-7">
+            This calculator outputs surface wind speed and gust values for a given 2000ft (gradient) wind and varying
+            atmospheric stability profiles. The technique was originally developed at RAF Honnington but is not site
+            specific.
+            <br><br>
+            <img class="card-img" src="/images/honnington_nomogram.png" alt="Honnington wind graph">
+            <br><br><br>
+        </div>
+</div>
+
+<!--The actual calculation-->
+<script>
+    function calculate() {
+        let grad_wind = parseFloat(document.forms['calcform']['grad_wind'].value);
+        /*stability profiles:
+        0 - 1200ft wind
+        2 - Steep inversion - mean
+        2 - Steep inversion - gust
+        3 - Shallow inversion - mean
+        4 - Shallow inversion - gust
+        5 - SALR from surface - mean
+        6 - SALR from surface - gust
+        7 - 1-2 deg C / 1000ft - mean
+        8 - 1-2 deg C / 1000ft - gust
+        9 - DALR from surface - mean
+        10 - DALR from surface - gust
+        11 - DALR to 6000ft - mean
+        12 - DALR to 6000ft - gust
+        13 - Large CU / Steep LR - mean
+        14 - Large CU / Steep LR - gust*/
+
+        let wind1200 = grad_wind * 0.9;
+
+        let steep_inv = grad_wind * (1.0 / 6.0);
+        let steep_inv_gust = steep_inv;
+        let shallow_inv = grad_wind * (3.0 / 10.0);
+        let shallow_inv_gust = shallow_inv * (30.0 / 25.0);
+        let salr_sfc = grad_wind * (2.0 / 5.0);
+        let salr_sfc_gust = salr_sfc * (35.0 / 25.0);
+        let one_c1000 = grad_wind * (25.0 / 49.0);
+        let one_c1000_gust = one_c1000 * (35.0 / 25.0);
+        let dalr_sfc = grad_wind * (25.0 / 45.0);
+        let dalr_sfc_gust = dalr_sfc * (24.5 / 15.0);
+        let dalr_6000 = grad_wind * (30.0 / 49.5);
+        let dalr_6000_gust = dalr_6000 * (24.5 / 15.0);
+        let large_cu = grad_wind * (27.5 / 40.0);
+        let large_cu_gust = large_cu * (24.5 / 15.0);
+
+        document.getElementById('wind1200').innerHTML = wind1200.toFixed(0);
+        document.getElementById('steep_inv').innerHTML = steep_inv.toFixed(0);
+        document.getElementById('steep_inv_gust').innerHTML = steep_inv_gust.toFixed(0);
+        document.getElementById('shallow_inv').innerHTML = shallow_inv.toFixed(0);
+        document.getElementById('shallow_inv_gust').innerHTML = shallow_inv_gust.toFixed(0);
+        document.getElementById('salr_sfc').innerHTML = salr_sfc.toFixed(0);
+        document.getElementById('salr_sfc_gust').innerHTML = salr_sfc_gust.toFixed(0);
+        document.getElementById('one_c1000').innerHTML = one_c1000.toFixed(0);
+        document.getElementById('one_c1000_gust').innerHTML = one_c1000_gust.toFixed(0);
+        document.getElementById('dalr_sfc').innerHTML = dalr_sfc.toFixed(0);
+        document.getElementById('dalr_sfc_gust').innerHTML = dalr_sfc_gust.toFixed(0);
+        document.getElementById('dalr_6000').innerHTML = dalr_6000.toFixed(0);
+        document.getElementById('dalr_6000_gust').innerHTML = dalr_6000_gust.toFixed(0);
+        document.getElementById('large_cu').innerHTML = large_cu.toFixed(0);
+        document.getElementById('large_cu_gust').innerHTML = large_cu_gust.toFixed(0);
+    }
+</script>

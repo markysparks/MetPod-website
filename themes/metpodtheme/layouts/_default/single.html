@@ -1,0 +1,20 @@
+{{ define "main" }}
+
+{{ if or .Params.math .Site.Params.math }}
+{{ partial "math.html" . }}
+{{ end }}
+
+{{ if or .Params.aws_graphs .Site.Params.aws_graphs }}
+{{ partial "aws_graphs.html" . }}
+{{ end }}
+
+<div class="container bg-light rounded py-2">
+
+<h5 class="card card-header bg-info text-dark rounded">{{ .Title | markdownify }}</h5>
+  <p></p>
+
+  {{ .Content }}
+</div>
+{{ end }}
+
+

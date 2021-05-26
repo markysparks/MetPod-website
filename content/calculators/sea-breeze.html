@@ -1,0 +1,144 @@
+---
+title: "Sea breeze front velocity"
+math: true
+---
+<div class="row">
+        <div class="col-md-3">
+            <!--Calculation form-->
+            <div class="card card-header border-secondary rounded">
+                    <form name="calcform" onsubmit="calculate(); return false;">
+                        <div class="form-group">
+                            <label for="grad_winddir">Gradient wind direction (degs)</label>
+                            <input required type="number" step="any" class="form-control" id="grad_winddir" value="320">
+                        </div>
+                        <div class="form-group">
+                            <label for="grad_windspeed">Gradient windspeed (kts)</label>
+                            <input required type="number" step="any" class="form-control" id="grad_windspeed" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="seabreeze_dir">Sea breeze direction (degs)</label>
+                            <input required type="number" step="any" class="form-control" id="seabreeze_dir" value="135">
+                        </div>
+                        <div class="form-group">
+                            <label for="stability">Stability profile</label>
+                            <select name="stability" id="stability" class="form-control">
+                                <option value="0.5">0.5 - Moderate convection</option>
+                                <option value="0.4">0.4</option>
+                                <option value="0.3">0.3</option>
+                                <option value="0.2">0.2</option>
+                                <option value="0.1">0.1 - Dry thermals</option>
+                            </select><br>
+                        </div>
+                        <div class="form-group">
+                            <label for="mslp_land">MSLP Land (hPa)</label>
+                            <input required type="number" step="any" class="form-control" id="mslp_land" value="1017">
+                        </div>
+                        <div class="form-group">
+                            <label for="mslp_sea">MSLP Sea (hPa)</label>
+                            <input required type="number" step="any" class="form-control" id="mslp_sea" value="1017">
+                        </div>
+                        <div class="form-group">
+                            <label for="airtemp_inland">Air temp inland (&degC)</label>
+                            <input required type="number" step="any" class="form-control" id="airtemp_inland" value="21">
+                        </div>
+                        <div class="form-group">
+                            <label for="airtemp_sea">Air temp over sea (&degC)</label>
+                            <input required type="number" step="any" class="form-control" id="airtemp_sea" value="17">
+                        </div>
+                        <div class="form-group">
+                            <label for="dewpt_sea">Dew Pt. over sea (&degC)</label>
+                            <input required type="number" step="any" class="form-control" id="dewpt_sea" value="15">
+                        </div>
+                        <div class="form-group">
+                            <label for="dewpt_inland">Dew Pt. inland (&degC)</label>
+                            <input required type="number" step="any" class="form-control" id="dewpt_inland" value="15">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </div>
+                        <div class="form-group">
+                            <h5>V<sub>sbf</sub> : <label id="v_sbf" datatype="number"></label> knots</h5>
+                        </div>
+                    </form>
+                </div>
+            <br><br>
+        </div>
+
+        <!--Description of calculation-->
+        <div class="col-md-9">
+            <br>
+            <h5>Criteria for sea breezes:</h5>
+                <ul>
+                    <li>
+                        Inland temperatures greater than temperature of coastal waters;
+                    </li>
+
+                    <li>
+                        A moderate depth of dry convection to, say, between 750 and 900 m (2500 to 3000 ft)
+                        is required before the sea breeze can become established;
+                    </li>
+
+                    <li>
+                        If the air is so stable that the convection is confined to a very shallow layer there will
+                        be little or no penetration of the sea-breeze regardless of the temperature
+                        difference between land and sea;
+                    </li>
+
+                    <li>
+                        Only a weak offshore wind component of <14 knots at 3000 ft initially;
+                    </li>
+
+                    <li>
+                        Convection to 1500 m (4000 ft) favours deep inland penetration (deep convection, leading
+                        to shower or thundery activity, tends to halt the sea-breeze);
+                    </li>
+
+                    <li>
+                        Significant inland penetration is only likely if offshore 3000 ft wind is <10 knots.
+                    </li>
+                </ul>
+                <br>
+                <h5>Calculation method:</h5>
+                The calculator applies the density current equation from Simpson’s Sea Breeze and Local Winds and
+                subsequent research by David Jameson (Operational Meteorologist, Wattisham Met. Office).
+
+                $$v_{sbf} = 0.87 \left(\sqrt{gD \frac{\bigtriangleup \rho}{\rho}} \right) - 0.59U_g - \tau$$
+
+                The constants 0.87 and 0.59 were derived through experimentation along the south coast of England.
+                <var>D</var> = depth of sea breeze circulation (usually 350 m). The fraction is the density excess of the post sea
+                breeze front air, <var>g</var> = 9.81 and <var>&tau;</var> is a resultant action working against the sea breeze front inland
+                propagation, a direct result of turbulent mixing at the frontal boundary. This is at a maximum at max
+                diurnal heating, but wanes during the evening.
+        </div>
+    </div>
+
+<!--The actual calculation-->
+<script>
+    function calculate() {
+        let grad_windspeed = parseFloat(document.forms['calcform']['grad_windspeed'].value);
+        let seabreeze_dir = parseFloat(document.forms['calcform']['seabreeze_dir'].value);
+        let grad_winddir = parseFloat(document.forms['calcform']['grad_winddir'].value);
+        let dewpt_sea = parseFloat(document.forms['calcform']['dewpt_sea'].value);
+        let dewpt_inland = parseFloat(document.forms['calcform']['dewpt_inland'].value);
+        let mslp_land = parseFloat(document.forms['calcform']['mslp_land'].value);
+        let mslp_sea = parseFloat(document.forms['calcform']['mslp_sea'].value);
+        let airtemp_sea = parseFloat(document.forms['calcform']['airtemp_sea'].value);
+        let airtemp_inland = parseFloat(document.forms['calcform']['airtemp_inland'].value);
+        let stability = parseFloat(document.forms['calcform']['stability'].value);
+
+        let g = 9.81;
+        let seabreeze_depth = 350;
+        let uG1 = -1 * grad_windspeed * Math.cos((seabreeze_dir * Math.PI / 180) - (grad_winddir * Math.PI / 180));
+        let h12 = uG1 * 0.5144444;
+        let uG = h12 * 0.59;
+        let vappress_sea = 6.1078 * (Math.pow(10, ((7.5 * dewpt_sea) / (dewpt_sea + 237.3))));
+        let vappress_land = 6.1078 * (Math.pow(10, ((7.5 * dewpt_inland) / (dewpt_inland + 237.3))));
+        let j8 = ((mslp_land * 100) / (287.05 * (airtemp_inland + 273.15))) * (1 - ((0.378 * 100 * vappress_land) / (mslp_land * 100)));
+        let j12 = ((mslp_sea * 100) / (287.05 * (airtemp_sea + 273.15))) * (1 - ((0.378 * 100 * vappress_sea) / (mslp_sea * 100)));
+        let n4 = 1 / (j8 / j12) - 1;
+        let j14 = 0.87 * Math.pow(g * seabreeze_depth * n4, 0.5);
+        let v_sbf = ((j14 - uG) / 0.514444) * stability;
+
+        document.getElementById('v_sbf').innerHTML = v_sbf.toFixed(1);
+    }
+</script>

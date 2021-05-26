@@ -1,0 +1,124 @@
+---
+title: "Dew Point and Humidity"
+math: true
+---
+<div class="row">
+        <div class="col-md-4">
+            <!--Calculation form dew point from humidity-->
+            <div class="card card-header border-secondary rounded">
+                <h5><em>Dew point from humidity:</em></h5><p></p>
+                    <form name="calcformHumid" onsubmit="calculateFmHumid(); return false;">
+                        <div class="form-group">
+                            <label for="temp1">Temperature ( &degC)</label>
+                            <input required type="number" step="any" class="form-control" id="temp1" value="15.0" placeholder="Temperature (C)">
+                        </div>
+                        <div class="form-group">
+                            <label for="humidity">Humidity %</label>
+                            <input required type="number" step="any" class="form-control" id="humidity" value="50" placeholder="Humidity %">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </div>
+                        <div class="form-group">
+                            <h5>Dew Point : <label id="dewptHumid" datatype="number"></label> &degC</h5>
+                        </div>
+                    </form>
+                </div><br>
+
+            <!--Calculation form humidity from wet bulb-->
+            <div class="card card-header border-secondary rounded">
+                <h5><em>Dew point from wet bulb:</em></h5><p></p>
+                    <form name="calcformWetbulb" onsubmit="calculateFmWetbulb(); return false;">
+                        <div class="form-group">
+                            <label for="pressure">As read Pressure (hPa):</label>
+                            <input required type="number" step="any" class="form-control" id="pressure" value="1013.25" placeholder="Pressure (hPa)">
+                        </div>
+                        <div class="form-group">
+                            <label for="temp2">Temperature ( &degC)</label>
+                            <input required type="number" step="any" class="form-control" id="temp2" value="15.0" placeholder="Temperature">
+                        </div>
+                        <div class="form-group">
+                            <label for="wetbulb">Wet bulb temperature ( &degC)</label>
+                            <input required type="number" step="any" class="form-control" id="wetbulb" value="12.0" placeholder="WetBulb Temp &degC">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </div>
+                        <div class="form-group">
+                            <h5>Dew Point :  <label id="dewptWetbulb" datatype="number"></label> &degC</h5>
+                        </div>
+                        <div class="form-group">
+                            <h5>Humidity :  <label id="wetbulbHumid" datatype="number"></label> %</h5>
+                        </div>
+                    </form>
+                </div><br><br><br>
+        </div>
+
+        <!--Description of calculation-->
+        <div class="col-md-8">
+            These calculations are based on <a href="https://www.vaisala.com">Vaisala's</a> humidity conversion formulas.<br><br><p>
+            <i class="card bg-info">Note that measuring humidity accurately is challenging, especially at high humidities. Even the best
+                humidity sensors start to over read 1 - 3 % once you get past 90% RH.</i></p>
+
+                Initially the Water vapour saturation pressure <i>(P<sub>ws</sub>)</i> is calculated:
+                $$P_{ws}=A*10^{\left ( \frac{mT}{T+T_n} \right ) }$$
+
+                <i>T</i> is the temperature in deg C, the following are constants valid for a temperature range
+                -20 to +50 deg C with a maximum error of 0.083%; <i>A</i> = 6.116441, <i>m</i> = 7.591386,
+                <i>T<sub>n</sub></i> = 240.7263
+
+                Water vapour pressure itself is then calculated (hPa) using the relative humidity and <i>P<sub>ws</sub></i> :
+                $$P_w = P_{ws} * \frac{RH}{100}$$
+
+                Now Dew Point <i>(T<sub>d</sub>)</i> can be calculated:
+                $$T_d = \frac{T_n}{\left [ \frac{m}{^{10}log \left (\frac{P_w}{A} \right )} -1  \right ]}$$
+
+                For calculating dew point and humidity from the wet bulb (for a given pressure):
+                $$P_w = P_{ws}(T_{wet})-pressure * K * (T_{dry}-T_{wet})$$<br>
+                where <i>P<sub>w</sub></i> = Water vapour pressure, <i>K</i> = Psychrometer constant
+                0.0008 /deg C. Once <i>P<sub>w</sub></i> is known, humidity and dew point can be calculated using
+                the above equations.
+            <br>
+        </div>
+</div>
+
+<!--The actual calculation-->
+<script>
+    function calculateFmHumid() {
+        let temp = parseFloat(document.forms['calcformHumid']['temp1'].value);
+        let humidity = parseFloat(document.forms['calcformHumid']['humidity'].value);
+
+        let dewptHumid;
+
+        if (humidity > 0) {
+            let y = (7.591386 * temp) / (temp + 240.7263);
+            let pws = 6.116441 * Math.pow(10, y);
+            let pw = pws * (humidity / 100.0);
+            let x = Math.log10(pw / 6.116441);
+            let z = (7.591386 / x) - 1;
+            dewptHumid = (240.7263 / z).toFixed(1)
+        }
+
+        document.getElementById('dewptHumid').innerHTML = dewptHumid;
+    }
+
+    function calculateFmWetbulb() {
+        let temp_c = parseFloat(document.forms['calcformWetbulb']['temp2'].value);
+        let pressure = parseFloat(document.forms['calcformWetbulb']['pressure'].value);
+        let wetbulb_c = parseFloat(document.forms['calcformWetbulb']['wetbulb'].value);
+
+        let xdry = (7.591386 * temp_c) / (temp_c + 240.7263);
+        let xwet = (7.591386 * wetbulb_c) / (wetbulb_c + 240.7263);
+        let pwswet = 6.116441 * Math.pow(10, xwet);
+        let pwsdry = 6.116441 * Math.pow(10, xdry);
+        let pw = pwswet - pressure * 0.0008 * (temp_c - wetbulb_c);
+        let y = Math.log10(pw / 6.116441);
+        let z = (7.591386 / y) - 1;
+
+        let rh = (pw / pwsdry) * 100;
+
+        document.getElementById('dewptWetbulb').innerHTML = (240.7263 / z).toFixed(1);
+        document.getElementById('wetbulbHumid').innerHTML = rh.toFixed(1);
+    }
+</script>
+

@@ -1,0 +1,187 @@
+---
+title: "Modified Middle Wallop Fog Point / Visibility"
+math: true
+---
+<div class="row">
+        <div class="col-md-4">
+            <!--Calculation form-->
+            <div class="card card-header border-secondary rounded">
+                    <form name="calcform" onsubmit="calculate(); return false;">
+                        <div class="form-group">
+                            <label for="maxvis">Daytime max visibility (Mtrs):</label>
+                            <input required type="number" step="any" class="form-control" id="maxvis" value="25000">
+                        </div>
+                        <div class="form-group">
+                            <label for="mintemp">Min overnight temperature (&degC)</label>
+                            <input required type="number" step="any" class="form-control" id="mintemp" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="dewpt">Dew Point at max visibility (&degC)</label>
+                            <input required type="number" step="any" class="form-control" id="dewpt" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="windfactor">Wind speed overnight (knots)</label>
+                            <select name="windfactor" id="windfactor" class="form-control">
+                                <option value="1">0 - 5 kts</option>
+                                <option value="2">6 - 9 kts</option>
+                                <option value="3"> &gt 9 kts</option>
+                            </select>
+                        </div><br>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </div>
+                        <div class="form-group">
+                            <h5>Fog Point : <label id="fogpt" datatype="number"></label> &degC</h5>
+                        </div>
+                        <div class="form-group">
+                            <h5>Min Vis : <label id="minvis" datatype="number"></label> Mtrs</h5>
+                        </div>
+                        <div class="form-group">
+                            <h5>Dusk Vis : <label id="duskvis" datatype="number"></label> Mtrs</h5>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        <!--Description of calculation-->
+        <div class="col-md-8">
+                The original Middle Wallop technique was devised for forecasting air-mass visibility. It takes account of
+                those factors known to affect overnight visibility reductions; air-mass dewpoint, minimum overnight
+                temperature, maximum daytime visibility and surface wind speed.<p></p>
+
+            <p>
+                The original supposition was that the visibility reductions, once the temperature has fallen to air-mass
+                dewpoint, depend on the surface wind speed. A further supposition was that dusk visibility was generally
+                0.8 * daytime maximum visibility.
+            </p>
+
+            <table class="table table-striped">
+                <caption class="text-center"><p><i>Original Middle Wallop Technique</i></p></caption>
+              <tr>
+                <th class="text-center">Surface Wind (knots)</th>
+                <th>Visibility</th>
+              </tr>
+              <tr>
+                <td class="text-center">0-5</td>
+                <td>&frac13; Vis<sub>max</sub></td>
+              </tr>
+              <tr>
+                <td class="text-center">6-9</td>
+                <td>&frac12; Vis<sub>max</sub></td>
+              </tr>
+              <tr>
+                <td class="text-center">&gt; 9</td>
+                <td>&frac34; of Vis<sub>max</sub></td>
+              </tr>
+            </table>
+
+            <p>
+                The technique was adapted by Matt Woods (Operational Meteorologist, Wattisham Met Office) to explicitly
+                forecast the fog point - the technique is not site specific.
+            </p>
+            <p>
+                Extending the above technique downwards to the point at which fog develops (visibility < 1000 metres) will
+                give the associated fog point temperature. This is particularly useful as even the latest high resolution
+                NWP models have difficulty predicting fog formation in an accurate and timely manner. Other techniques such as
+                Saunders construction are not viable due to the lack of balloon ascents and resultant tephigrams.
+            </p>
+            <p>
+                Selection of air-mass dew point at maximum visibility is crucial. It may be necessary to employ back
+                trajectories in order to use a representative dew point for the overnight period.
+            </p>
+            <p>
+                Recent research conducted by the UK Met. Office facility at Cardington indicated an 85% success rate for
+                the technique which included nights when a meteorologist would not consider a significant fog risk to exist
+                due to strong gradient winds or an overnight frontal passage.
+            </p>
+            <p>
+                In order to develop a practical calculation tool we need to mathematically express the relationship between
+                the fog point and the dew point as surface wind speed varies. This work was undertaken by Dan Harris, Deputy
+                Chief Operational Meteorologist at the Met Office and can be expressed as follows:
+            </p>
+
+                $$T_{fog}=T_{dew}-\frac{ln \bigg(3*\frac{V_{max}}{n} \bigg)}{ln2}$$
+            <br>
+            where V<sub>max</sub> (max daytime visibility) is in metres and <i>n</i> is obtained from the following table:
+            <p>
+            <table class="table table-striped">
+              <tr>
+                <th class="text-center">Surface Wind (knots)</th>
+                <th><i>n</i></th>
+              </tr>
+              <tr>
+                <td class="text-center">0-5</td>
+                <td>9000</td>
+              </tr>
+              <tr>
+                <td class="text-center">6-9</td>
+                <td>6000</td>
+              </tr>
+              <tr>
+                <td class="text-center">&gt; 9</td>
+                <td>4000</td>
+              </tr>
+            </table>
+            <br><br><br>
+        </div>
+</div>
+
+<!--The actual calculation-->
+<script>
+    function calculate() {
+        let temp_min = parseFloat(document.forms['calcform']['mintemp'].value);
+        let maxvis = parseFloat(document.forms['calcform']['maxvis'].value);
+        let dewpt = parseFloat(document.forms['calcform']['dewpt'].value);
+        let windfactor = parseFloat(document.forms['calcform']['windfactor'].value);
+        let fogpt;
+        let minvis;
+        let duskvis = maxvis * 0.8;
+
+        if (windfactor === 1) {
+            fogpt = dewpt - (Math.log(maxvis / 3000) / Math.log(2));
+            minvis = maxvis * 0.33
+        }
+
+        else if (windfactor === 2) {
+            fogpt = dewpt - Math.log(maxvis / 2000) / Math.log(2);
+            minvis = maxvis * 0.5;
+        }
+
+        else {
+            fogpt = dewpt - (Math.log((3 * maxvis) / 4000) / Math.log(2));
+            minvis = maxvis * 0.75;
+        }
+
+        if (temp_min - dewpt < 0) {
+            minvis /= 2
+        }
+        if (temp_min - dewpt < -1) {
+            minvis /= 2
+        }
+        if (temp_min - dewpt < -2) {
+            minvis /= 2
+        }
+        if (temp_min - dewpt < -3) {
+            minvis /= 2
+        }
+        if (temp_min - dewpt < -4) {
+            minvis /= 2
+        }
+        if (temp_min - dewpt < -5) {
+            minvis /= 2
+        }
+        if (temp_min - dewpt < -6) {
+            minvis /= 2
+        }
+        if (temp_min - dewpt < -7) {
+            minvis /= 2
+        }
+        if (temp_min - dewpt > 0) {
+            minvis = duskvis
+        }
+
+        document.getElementById('fogpt').innerHTML = fogpt.toFixed(1);
+        document.getElementById('minvis').innerHTML = (Math.round(minvis/100)*100).toFixed(0);
+        document.getElementById('duskvis').innerHTML = (Math.round(duskvis/100)*100).toFixed(0);
+    }
+</script>

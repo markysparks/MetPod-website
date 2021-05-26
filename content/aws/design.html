@@ -1,0 +1,78 @@
+---
+title: "Automatic weather station design"
+---
+<div class="row">
+  <div class="col-md-8">
+            <p>
+                This prototype MetPod automatic weather station is designed around the
+                <a href="https://www.raspberrypi.org/products//">Raspberry Pi platform</a> and running the
+                <a href="https://www.balena.io/os/">Balena OS embedded operating system.</a>
+            </p>
+            <ul>
+                <li>Balena OS is an embedded OS tailored for containers. Python applications run within
+                containers and can be (optionally) built and managed through <a href="https://www.balena.io/cloud/">Balena Cloud</a> IoT
+                fleet management.
+                <li>Software updates can be pushed to the device locally or remotely.
+                <li>Interface to multiple sensors using USB=>RS232/RS485 ModBus.
+                <li>Device variables can be set from the Balena web dashboard or set in the Dockerfile.
+                <li>MODBUS service can be used to communicate with a data logger for analogue sensor interfacing.</li>
+                <li>Isolation between sensor nodes/hubs and services provided by containerisation.</li>
+                <li>Remotely restart the device or the container.
+            </ul>
+            <p>
+                Data is continuously updated from the sensors and sent at regular intervals to Met Office WoW and Amazon IoT.
+                The beauty of this design is that brings all the benefits of containerisation
+                and desktop development to an embedded IoT device. This makes development and deployment a breeze compared
+                to traditional embedded environments.
+            </p>
+            <p>
+                <h6>Design philosophy:</h6>Incorporate currently available, high quality sensors into a scalable and flexible
+                ‘internet of things (IoT)’ environment using the latest tools and technologies. Containerisation is
+                used to isolate services and sensor ‘nodes’, provide control and a comprehensive, easy to use
+                development environment. MQTT is used to as the transport protocol for communications between the sensor
+                and an IoT hub/edge device or IoT service (e.g. Amazon Web Services).
+            </p>
+            <p>
+                <h6>Sensor interfacing:</h6>Most professional digital sensors have provide an RS232/485 interface,
+                this can readily be incorporated into an IoT edge device using for example USB/Serial convertors.
+                In the case of analogue sensors, if there is a desire to still use these then its probably best
+                to use a traditional data logger and then communicate between this and IoT edge device via e.g. ModBus.
+            </p>
+            <p>
+                <h6>Containerisation of sensors and services:</h6>Each sensor is made ‘smart’ by utilising a standard container
+                structure for sensors. Services that make use of this data are also containerised. Sensor
+                data can then be easily shared between sensors and services.
+            </p>
+            <p>
+                <h6>Sensor ‘nodes or ‘hub’?</h6>The containerised application for a particular sensor could be
+                run on its own hardware (node) or a central ‘edge’ device in the field can run multiple containers
+                for multiple sensors (hub). There is flexibility to do either, at the end of the day we just need
+                to send and receive data to/from the cloud or local processing unit via MQTT.
+            </p>
+        <p>
+            <a href="https://corlysis.com/grafana/?token=125b41e4-7462-4eaa-a293-9e20c09e38b6">View live data dashboard</a><br>
+            Data is stored in an InfluxDB database and viewed through a Grafana dashboard. The dashboard
+            can be easily customised with all manner of graphs, gauges and text fields. The dashboard user
+            is able to choose the displayed data time period and refresh interval.
+        </p>
+
+      <div class="card-img">
+           <img src="/images/grafana_dashboard.jpeg" alt="MetPod Dashboard." class="card card-img rounded">
+       </div><br><br>
+  </div>
+
+  <div class="col-md-4">
+      <div class="card-img">
+           <img src="/images/metpod_blockdiag.jpg" alt="MetPod block diag." class="card card-img rounded">
+       </div>
+      <div class="card-img">
+           <img src="/images/metpod_display.jpeg" alt="MetPod hardware." class="card card-img rounded">
+       </div>
+      <div class="card-img">
+           <img src="/images/metpod_hardware.jpeg" alt="MetPod hardware." class="card card-img rounded">
+       </div>
+       <div class="card-img">
+           <img src="/images/metpod_sensors.jpeg" alt="MetPod sensors." class="card card-img rounded">
+       </div><br><br>
+    </div>
+</div>

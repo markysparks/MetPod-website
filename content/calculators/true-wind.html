@@ -1,0 +1,206 @@
+---
+title: "True wind on a moving platform"
+math: true
+---
+<div class="row">
+        <div class="col-md-4">
+            <!--Calculation form-->
+            <div class="card card-header border-secondary rounded">
+                    <form name="calcform" onsubmit="calculate(); return false;">
+                        <div class="form-group">
+                            <label for="cog">Course over ground (degs)</label>
+                            <input required type="number" step="any" class="form-control" id="cog" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="sog">Speed over ground (kts)</label>
+                            <input required type="number" step="any" class="form-control" id="sog" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="heading">Heading (degs)</label>
+                            <input required type="number" step="any" class="form-control" id="heading" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="obswinddir">Observed wind direction (degs)</label>
+                            <input required type="number" step="any" class="form-control" id="obswinddir" value="90">
+                        </div>
+                        <div class="form-group">
+                            <label for="obswindspd">Observed wind speed (kts)</label>
+                            <input required type="number" step="any" class="form-control" id="obswindspd" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="offset">Anemometer offset (degs)</label>
+                            <input required type="number" step="any" class="form-control" id="offset" value="0">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </div>
+                        <div class="form-group">
+                            <h5>True wind dir : <label id="truedir" datatype="number"></label> &deg</h5>
+                        </div>
+                        <div class="form-group">
+                            <h5>True wind speed : <label id="truespd" datatype="number"></label> kts</h5>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        <!--Description of calculation-->
+        <div class="col-md-8">
+            This calculation method is based upon comprehensive research carried out by Smith, Bourassa and Sharp (Florida State
+            University) detailed in a paper titled
+            <i>
+                "Establishing more truth in true winds" and published in the Journal of Atmospheric and Oceanic Technology (December 1999).
+            </i><p></p>
+            <p>
+            Originally developed for ships, the required parameters include the vessels course over the ground, speed over the
+            ground, heading, any anemometer offset and observed wind speed and direction relative to the vessel. Note that the
+            vessels heading (indicated by compass) and course over the ground (as measured by GPS track) may well be different
+            due to the effects of tide and leeway.
+            </p>
+            <p>
+            The technique can also be applied to moving land platforms but in this case the course over the ground and heading
+            values will almost certainly be the same. All calculations are performed in the mathematical coordinate system which
+            has an angle of zero degrees on the positive x-axis with angles increasing in a counterclockwise direction. Each
+            vector direction, originally defined using the meteorological conventions is converted to mathematical coordinates
+            prior to other calculations. Primes (') denote values in math coordinates.
+            </p>
+                    <p>
+                        The direction of the observed wind in math coordinates <var>A</var> is:
+                    </p>
+                        <p>$$A_{\theta}^{'}=270^\circ-\left(h_{\theta}+R_{\theta}+P_{\theta}\right)$$</p>
+
+                    <p>
+                        where <var>h</var> is the vessels heading, <var>R</var> the anemometer offset (if any) from zero and <var>P</var>
+                        the platform relative observed wind direction.
+                    </p>
+                    <p>
+                        The course over the ground <var>C</var> of the vessel in math coordinates is:
+                    </p>
+                    <p>
+                        $$C_{\theta}^{'}=90^\circ-C_{\theta}$$</p>
+                    <p>
+                        The true wind is then calculated by summing the vector components of the observed wind and vessels
+                        motion:
+                    </p>
+                    <p>
+                        $$T_{u}=T_{u}^{'}=\left|A\right|\cos\left(A_{\theta}^{'}\right)+\left|C\right|\cos\left(C_{\theta}^{'}\right)$$
+                    </p>
+
+                    <p>
+                        $$T_{v}=T_{v}^{'}=\left|A\right|\sin\left(A_{\theta}^{'}\right)+\left|C\right|\sin\left(C_{\theta}^{'}\right)$$
+                    </p>
+
+                    <p>
+                        where positive <var>T<sub>u</sub></var> and <var>T<sub>v</sub></var> are eastwards and northwards
+                        components of the true wind in the earth reference frame.</p>
+                    <p>
+                        The true wind speed <var>|T|</var> and direction <var>T</var><sub>&theta;</sub> can then be calculated:
+                    </p>
+                    <p>
+                        $$\left|T\right|=\sqrt{\left(T_{u}^{2}+T_{v}^{2}\right)}$$
+                    </p>
+                    <p>
+                        $$T_{\theta}=270^\circ-\arctan\left(\frac{T_{v}}{T_{u}}\right)$$
+                    </p>
+                    <p>
+                        The 270<sup>&deg;</sup>converts the value of the arctan to a direction <i>from</i> which the wind is
+                        blowing (meteorological convention) in the earth coordinate system.
+                    </p>
+                    <br><br><br>
+        </div>
+</div>
+
+<!--The actual calculation-->
+<script>
+    function calculate() {
+        let cog = parseFloat(document.forms['calcform']['cog'].value);
+        let sog = parseFloat(document.forms['calcform']['sog'].value);
+        let heading = parseFloat(document.forms['calcform']['heading'].value);
+        let obswinddir = parseFloat(document.forms['calcform']['obswinddir'].value);
+        let obswindspeed = parseFloat(document.forms['calcform']['obswindspd'].value);
+        let offset = parseFloat(document.forms['calcform']['offset'].value);
+        let truewinddir;
+        let truewindspd;
+        let mathtruedir;
+
+
+        let calm_flag;
+        let deg2rad = Math.PI / 180;
+
+        // convert from navigational coordinates to angles
+        // commonly used in mathematics
+        let mathcog = 90.0 - cog;
+
+        // keep the value between 0 and 360 degrees
+        if (mathcog <= 0.0) {
+            mathcog += 360.0
+        }
+
+        // check zero offset for valid value.  If not valid, set equal to zero.
+        if (offset < 0.0 || offset > 360.0) {
+            offset = 0.0
+        }
+
+        // calculate apparent wind direction
+        let appwinddir = heading + obswinddir + offset;
+
+        // keep apparent direction between 0 and 360 degrees
+        while (appwinddir >= 360.0) {
+            appwinddir -= 360.0
+        }
+
+        // convert from meteorological coordinates to angles commonly used in mathematics
+        let mathwinddir = 270.0 - appwinddir;
+
+        // keep the value between 0 and 360 degrees
+        if (mathwinddir <= 0.0) {
+            mathwinddir += 360.0
+        } else if (mathwinddir > 360.0) {
+            mathwinddir -= 360.0
+        }
+
+        // determine the East-West vector component and the North-South vector component of the true wind
+        let x = (obswindspeed * Math.cos(mathwinddir * deg2rad)) + (
+            sog * Math.cos(mathcog * deg2rad));
+        let y = (obswindspeed * Math.sin(mathwinddir * deg2rad)) + (
+            sog * Math.sin(mathcog * deg2rad));
+
+        // use the two vector components to calculate the true wind speed
+        truewindspd = Math.sqrt((x * x) + (y * y));
+        calm_flag = 1;
+
+        // determine the angle for the true wind
+        if (Math.abs(x) > 0.00001) {
+            mathtruedir = (Math.atan2(y, x)) / deg2rad
+        } else if (Math.abs(y) > 0.00001) {
+            mathtruedir = 180.0 - (90.0 * y) / Math.abs(y)
+        }
+
+        // the true wind speed is essentially zero: winds are calm and direction is not well defined
+        else {
+            mathtruedir = 270.0;
+            calm_flag = 0
+        }
+
+        // convert from the common mathematical angle coordinate to the meteorological wind direction
+        truewinddir = 270.0 - mathtruedir;
+
+        // make sure that the true wind angle is between 0 and 360 degrees
+        if (truewinddir < 0.0) {
+            truewinddir += 360.0 * calm_flag
+        }
+        else if (truewinddir > 360.0) {
+                    truewinddir -= 360.0 * calm_flag
+                }
+
+        // Ensure WMO convention for true wind dir= 360 deg for wind from North and true wind speed > 0
+        if (calm_flag === 1 && truewinddir < 0.0001) {
+                truewinddir = 360.0;
+                x = 0.0;
+                y = 0.0
+        }
+
+        document.getElementById('truedir').innerHTML = truewinddir.toFixed(0);
+        document.getElementById('truespd').innerHTML = truewindspd.toFixed(0);
+    }
+</script>

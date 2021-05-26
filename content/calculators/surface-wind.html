@@ -1,0 +1,176 @@
+---
+title: "Surface wind from gradient wind"
+math: true
+---
+<div class="row">
+        <div class="col-md-4">
+            <!--Calculation form-->
+            <div class="card card-header border-secondary rounded">
+                        <form name="calcform" onsubmit="calculate(); return false;">
+                            <div class="form-group">
+                                <label for="geospeed">Geostrophic speed (kts)</label>
+                                <input class="form-control" id="geospeed" required step="any" type="number" value="40">
+                            </div>
+                            <div class="form-group">
+                                <label for="geodir">Geostrophic direction (degs)</label>
+                                <input class="form-control" id="geodir" required step="any" type="number" value="120">
+                            </div>
+                            <div class="form-group">
+                                <label for="latitude">Latitude (degs)</label>
+                                <input class="form-control" id="latitude" required step="any" type="number" value="52">
+                            </div>
+                            <div class="form-group">
+                                <label for="curv">Curvature radius (NM)</label>
+                                <input class="form-control" id="curv" required step="any" type="number" value="600">
+                            </div>
+                            <div class="form-group">
+                                <label for="stability">Stability profile</label>
+                                <select class="form-control" id="stability" name="stability">
+                                    <option value="0">Land - clear night</option>
+                                    <option value="1">Land - average</option>
+                                    <option value="2">Land - unstable</option>
+                                    <option value="3">Sea - stable</option>
+                                    <option value="4">Sea - unstable</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" type="submit">Calculate</button>
+                            </div>
+                            <div class="form-group">
+                                <h5>Cyclonic : <label datatype="number" id="cycl"></label> knots</h5>
+                            </div>
+                            <div class="form-group">
+                                <h5>Anticyclonic : <label datatype="number" id="anticyc"></label> knots</h5>
+                            </div>
+                            <div class="form-group">
+                                <h5>Direction : <label datatype="number" id="dir"></label> &deg</h5>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            <!--Description of calculation-->
+            <div class="col-md-8">
+                This utility allows you to calculate the expected surface wind speed and direction for a
+                given geostrophic wind. Initially gradient wind speed is calculated for cyclonic (sub-geostrophic) and
+                anticyclonic (super-geostrophic) flow as follows; if <var>r</var> is the radius of flow curvature
+                (nautical miles), <var>&Phi;</var> the latitude (degrees),
+                <var>f</var> the coriolis parameter (s<sup>-1</sup>) and <var>V<sub>g</sub></var> the geostrophic
+                wind velocity (ms<sup>-1</sup>):
+                <br>
+
+                $$V_{sub-geostr} = \frac{1}{2} \left(-rf + \sqrt{r^2f^2 + 4rfv_g} \right)$$
+
+                $$V_{super-geostr} = \frac{1}{2} \left(rf - \sqrt{r^2f^2 - 4rfv_g} \right)$$
+
+                $$f = 2\Omega sin\phi$$
+
+
+                Note: If there's an error in calculating the super geostrophic wind, remember there is, dynamically a
+                limit to the strength of winds around an anticyclone. Pressure gradient force acts outwards so closer
+                isobars fight against circular motion, in effect the expression within the square root section of the
+                super
+                geostrophic equation must be positive or zero.
+
+                The resultant speeds are then reduced and the direction backed for the selected atmospheric stability
+                profile and surface type as follows:
+                <br><br>
+
+                <table class="table table-striped">
+                    <caption class="text-center"><p><i>Calculating surface wind from the gradient wind</i></p></caption>
+                    <tr>
+                        <th>Stability and surface</th>
+                        <th class="text-center">Speed reduction factor</th>
+                        <th class="text-center">Direction backed (degs)</th>
+                    </tr>
+                    <tr>
+                        <td>Land - clear night</td>
+                        <td class="text-center">0.2</td>
+                        <td class="text-center">-40</td>
+                    </tr>
+                    <tr>
+                        <td>Land - average</td>
+                        <td class="text-center">0.4</td>
+                        <td class="text-center">-30</td>
+                    </tr>
+                    <tr>
+                        <td>Land - unstable</td>
+                        <td class="text-center">0.5</td>
+                        <td class="text-center">-20</td>
+                    </tr>
+                    <tr>
+                        <td>Sea - stable</td>
+                        <td class="text-center">0.8</td>
+                        <td class="text-center">-10</td>
+                    </tr>
+                    <tr>
+                        <td>Sea - unstable</td>
+                        <td class="text-center">0.9</td>
+                        <td class="text-center">-5</td>
+                    </tr>
+                </table>
+                <br><br><br>
+            </div>
+        </div>
+
+<!--The actual calculation-->
+<script>
+    function calculate() {
+        let cycl;
+        let anticyc;
+        let speed_reduce_factor;
+        let angle_backed = 0;
+        let sfc_dir;
+        let omega = 0.000072921;
+        let geos_dir = parseFloat(document.forms['calcform']['geodir'].value);
+        let geos_windspd_ms = (parseFloat(document.forms['calcform']['geospeed'].value) * 0.514444);
+        let radius_mtrs = (parseFloat(document.forms['calcform']['curv'].value) * 1852);
+        let latitude = parseFloat(document.forms['calcform']['latitude'].value);
+        let f = (2 * omega) * Math.sin(latitude * Math.PI / 180);
+        let stab_type = parseFloat(document.forms['calcform']['stability'].value);
+
+        let sqrt_exp_cycl = ((radius_mtrs * radius_mtrs) * (f * f)) + (4 * radius_mtrs * f * geos_windspd_ms);
+        let vg_cycl = 0.5 * ((-1 * radius_mtrs * f) + (Math.sqrt(sqrt_exp_cycl)));
+        cycl = vg_cycl * 1.9438;
+
+        let sqrt_exp_anti = ((radius_mtrs * radius_mtrs) * (f * f)) - (4 * radius_mtrs * f * geos_windspd_ms);
+
+        if (sqrt_exp_anti < 0) {
+            anticyc = NaN
+        } else {
+            let vg_anti = 0.5 * ((radius_mtrs * f) - (Math.sqrt(sqrt_exp_anti)));
+            anticyc = vg_anti * 1.9438;
+        }
+
+        if (stab_type === 0) {
+            speed_reduce_factor = 0.2;
+            angle_backed = -40;
+        } else if (stab_type === 1) {
+            speed_reduce_factor = 0.4;
+            angle_backed = -30;
+        } else if (stab_type === 2) {
+            speed_reduce_factor = 0.5;
+            angle_backed = -20;
+        } else if (stab_type === 3) {
+            speed_reduce_factor = 0.8;
+            angle_backed = -10;
+        } else if (stab_type === 4) {
+            speed_reduce_factor = 0.9;
+            angle_backed = -5;
+        }
+
+        let dir_raw = geos_dir + angle_backed;
+
+        if (dir_raw < 0) {
+            sfc_dir = dir_raw + 360
+        } else if (dir_raw > 360) {
+            sfc_dir = dir_raw - 360
+        } else {
+            sfc_dir = dir_raw
+        }
+
+        document.getElementById('cycl').innerHTML = (cycl * speed_reduce_factor).toFixed(0);
+        document.getElementById('anticyc').innerHTML = (anticyc * speed_reduce_factor).toFixed(0);
+        document.getElementById('dir').innerHTML = sfc_dir.toFixed(0);
+    }
+</script>

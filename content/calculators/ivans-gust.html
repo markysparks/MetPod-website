@@ -1,0 +1,126 @@
+---
+title: "Ivens (Maximum convective wind gust)"
+math: true
+---
+<div class="row">
+        <div class="col-md-3">
+            <!--Calculation form-->
+            <div class="card card-header border-secondary rounded">
+                    <form name="calcform" onsubmit="calculate(); return false;">
+                        <div class="form-group">
+                            <label for="maxtemp">Forecast max temp (&degC)</label>
+                            <input required type="number" step="any" class="form-control" id="maxtemp" value="11">
+                        </div>
+                        <div class="form-group">
+                            <label for="wbpt850">WBPT 850 hPa ( &degC)</label>
+                            <input required type="number" step="any" class="form-control" id="wbpt850" value="4">
+                        </div>
+                        <div class="form-group">
+                            <label for="wbpt500">WBPT 500 hPa ( &degC)</label>
+                            <input required type="number" step="any" class="form-control" id="wbpt500" value="4">
+                        </div>
+                        <div class="form-group">
+                            <label for="wind850">Wind speed 850 hPa (kts)</label>
+                            <input required type="number" step="any" class="form-control" id="wind850" value="12">
+                        </div>
+                        <div class="form-group">
+                            <label for="wind250">Wind speed 250 hPa (kts)</label>
+                            <input required type="number" step="any" class="form-control" id="wind250" value="56">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </div>
+                        <div class="form-group">
+                            <h5>Max Gust : <label id="maxgust" datatype="number"></label> knots</h5>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        <!--Description of calculation-->
+        <div class="col-md-9">
+            Maximum wind gust associated with heavy showers or thunderstorms.
+            This method was developed by Ruud A.A.M. Ivens of the Royal Netherlands Meteorological Institute (KNMI) and
+            was originally detailed in the paper <i>Proc. Symp. Mesoscale Analysis & Forecasting, Vancouver, Canada
+            17-19 August 1987, ESA SP-282 (August 1987)</i>.
+
+            <p><p>
+                It has been proven to be accurate and reliable for use in
+                operational forecasting, particularly in the European area when other techniques originating from the USA
+                produced excessively high velocities.
+            </p>
+                <br>
+
+            <p>The technique is a statistical method developed using multiple regression. The following parameters
+                are considered:
+                <ul>
+                    <li>The difference between maximum daytime temperature (<i>T<sub>x</sub></i>) and
+                        <i>&theta;<sub>w</sub></i> at 850 hPa: If the showers developed over the sea, sea surface
+                        temperature is used instead of <i>T<sub>x</sub></i>.
+                    </li>
+                    <li>
+                        \(T_x-\theta_w500\) and \(\theta_w850-\theta_w500\)
+                    </li>
+                    <li>
+                        The square roots of the above parameters.
+                    </li>
+                    <li>
+                        Wind velocity <i>U</i> at 850 and 250 hPa.
+                    </li>
+                </ul>
+                <p>
+                    There was a marked difference in the maximum gust in relation to upper air data in the case of
+                    \(T_x-\theta_w850<9 ^\circ C\) or \(T_x-\theta_w850\geq 9 ^\circ C\). As a result of this multiple
+                    regression equations were derived separately.
+                </p>
+                    <h6 class="bg-info">$$if \quad T_x-\theta_w850<9 ^\circ C:\quad$$</h6>
+                        $$FF_{max}=14.9+0.976*U850+1.27(\theta_w850- \theta_w500)$$<br>
+
+                    <h6 class="bg-info">$$if \quad T_x-\theta_w850\geq 9 ^\circ C:\quad$$</h6>
+                        $$FF_{max}=15.9+0.174*U850\sqrt{T_x- \theta_w500}
+                        +0.057*U250\sqrt{T_x-\theta _w500}+0.92*(\theta _w850-\theta _w500)$$
+                <p><br>
+                    where <var>FF<sub>max</sub></var> is the maximum gust in knots, <var>T<sub>x</sub></var> the maximum daytime
+                    temperature (deg C), <var>U850</var> and <var>U250</var> the wind at 850 and 250 hPa (kts) respectively and
+                    <var>&theta;<sub>w</sub>850</var>, <var>&theta;<sub>w</sub>500</var> the wet bulb potential temperature at
+                    850 and 500 hPa (deg C) respectively.</p>
+
+                    <p>Note that should any of the expressions within the square root operators evaluate to less than
+                    zero (highly unlikely in real atmospheric conditions), then the expression will be set
+                    to zero internally to avoid arithmetical errors.</p>
+                <br><br>
+        </div>
+    </div>
+
+<!--The actual calculation-->
+<script>
+    function calculate() {
+        let max_temp = parseFloat(document.forms['calcform']['maxtemp'].value);
+        let wbpt850 = parseFloat(document.forms['calcform']['wbpt850'].value);
+        let wbpt500 = parseFloat(document.forms['calcform']['wbpt500'].value);
+        let windspd850 = parseFloat(document.forms['calcform']['wind850'].value);
+        let windspd250 = parseFloat(document.forms['calcform']['wind250'].value);
+        let max_gust;
+
+
+        let sqrt_value850 = max_temp - wbpt850;
+        let sqrt_value500 = max_temp - wbpt500;
+
+        // Don't attempt square root operations on value less than zero
+        if (sqrt_value850 < 0) {
+            sqrt_value850 = 0
+        }
+        if (sqrt_value500 < 0) {
+            sqrt_value500 = 0
+        }
+        if (max_temp - wbpt850 < 9) {
+            max_gust = 14.9 + (0.976 * windspd850) + (1.27 * (wbpt850 - wbpt500))
+        }
+        else {
+            max_gust = 15.9 + (0.174 * (windspd850 * (Math.sqrt(sqrt_value850)))) + (0.057 * (windspd250 *
+                (Math.sqrt(sqrt_value500)))) + (0.92 * (wbpt850 - wbpt500))
+        }
+
+        document.getElementById('maxgust').innerHTML = max_gust.toFixed(0);
+    }
+</script>

@@ -1,0 +1,1051 @@
+---
+title: "Maximum Daytime Temperature from partial thickness (1000-850 hPa) - C&P method"
+math: true
+---
+<div class="row">
+        <div class="col-md-4">
+            <!--Calculation form-->
+            <div class="card card-header border-secondary rounded">
+                    <form name="calcform" onsubmit="calculate(); return false;">
+                        <div class="form-group">
+                            <label for="thickness">Partial thickness (1000-850 hPa)</label>
+                            <input required type="number" step="any" class="form-control" id="thickness" value="1280">
+                        </div>
+                        <div class="form-group">
+                            <label for="date_period">Date period</label>
+                            <select name="date_period" id="date_period" class="form-control">
+                                <option value="0">Jan 1st - 10th</option>
+                                <option value="1">Jan 11th - 20th</option>
+                                <option value="2">Jan 21st - 31st</option>
+                                <option value="3">Feb 1st - 10th</option>
+                                <option value="4">Feb 11th - 20th</option>
+                                <option value="5">Feb 20th - 28th</option>
+                                <option value="6">Mar 1st - 10th</option>
+                                <option value="7">Mar 11th - 20th</option>
+                                <option value="8">Mar 21st - 31st</option>
+                                <option value="9">Apr 1st - 10th</option>
+                                <option value="10">Apr 11th - 20th</option>
+                                <option value="11">Apr 21st - 30th</option>
+                                <option value="12">May 1st - 10th</option>
+                                <option value="13">May 11th - 20th</option>
+                                <option value="14">May 21st - 31st</option>
+                                <option value="15">Jun 1st - 10th</option>
+                                <option value="16">Jun 11th - 20th</option>
+                                <option value="17">Jun 21st - 30th</option>
+                                <option value="18">Jul 1st - 10th</option>
+                                <option value="19">Jul 11th - 20th</option>
+                                <option value="20">Jul 21st - 31st</option>
+                                <option value="21">Aug 1st - 10th</option>
+                                <option value="22">Aug 11th - 20th</option>
+                                <option value="23">Aug 21st - 31st</option>
+                                <option value="24">Sep 1st - 10th</option>
+                                <option value="25">Sep 11th - 20th</option>
+                                <option value="26">Sep 21st - 30th</option>
+                                <option value="27">Oct 1st - 10th</option>
+                                <option value="28">Oct 11th - 20th</option>
+                                <option value="29">Oct 21st - 31st</option>
+                                <option value="30">Nov 1st - 10th</option>
+                                <option value="31">Nov 11th - 20th</option>
+                                <option value="32">Nov 21st - 30th</option>
+                                <option value="33">Dec 1st - 10th</option>
+                                <option value="34">Dec 11th - 20th</option>
+                                <option value="35">Dec 21st - 31st</option>
+                            </select>
+                        </div>
+                         <div class="form-group">
+                            <label for="cloud_class">Cloud class</label>
+                            <select name="cloud_class" id="cloud_class" class="form-control">
+                                <option value="0">0 - CL + CM &#8804;3/8, CH &#8804;5/8</option>
+                                <option value="1">1 - CL + CM + CH &#61; 4/8-6/8</option>
+                                <option value="2">2 - CL + CM &#8805;6/8</option>
+                                <option value="3">3 - Overcast with precipitation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </div>
+                        <div class="form-group">
+                            <h5>Max Temperature : <label id="max_temp" datatype="number"></label> &degC</h5>
+                        </div>
+                        <br>
+                        <div>
+                            <table class="table table-striped">
+                            <caption class="text-left"><i>Max temp range for cloud classes with selected thickness and date period:</i></caption>
+                                  <tr>
+                                    <th class="text-center">Cloud Class</th>
+                                    <th class="text-center">Max Temp &degC</th>
+                                  </tr>
+                                  <tr>
+                                    <td class="text-center">0 :</td>
+                                    <td class="text-center"><label id="temp0" datatype="number"></label></td>
+                                  </tr>
+                                  <tr>
+                                    <td class="text-center">1 :</td>
+                                    <td class="text-center"><label id="temp1" datatype="number"></label></td>
+                                  </tr>
+                                  <tr>
+                                    <td class="text-center">2 :</td>
+                                    <td class="text-center"><label id="temp2" datatype="number"></label></td>
+                                  </tr>
+                                     <tr>
+                                    <td class="text-center">3 :</td>
+                                    <td class="text-center"><label id="temp3" datatype="number"></label></td>
+                                  </tr>
+                            </table>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+         <!--Description of calculation-->
+        <div class="col-md-8">
+            <h6>Callen and Prescott method:</h6>
+            This is an empirical technique based on the maximum temperatures observed at Gatwick and the 1000-850 hPa
+            thickness values at midday at Crawley.
+            <br><br>
+            Three steps are involved:
+            <ol>
+                <li>
+                    Obtain the 1000-850 hPa thickness value (gpm).
+                </li>
+                <li>
+                    Obtain the temperature adjustment for the time of year and cloud class from the graph.
+                </li>
+                <li>
+                    Apply this correction to the uncorrected maximum temperature from thickness values to obtain <i>T<sub>max</sub></i>
+                </li>
+            </ol>
+
+            The relationship between 1000-850 hPa thickness values (<i>h</i>) and the unadjusted maximum temperature (<i>T<sub>u</sub></i>)
+            is given by:
+            <br>
+
+            $$T_u = -192.65 + 0.156h$$
+
+            <table class="table table-striped">
+                <caption class="text-center"><p><i>Cloud Class definitions and adjustment curves:</i></p></caption>
+              <tr>
+                <th class="text-center">Cloud Class</th>
+                <th class="text-center">Definition</th>
+              </tr>
+              <tr>
+                <td class="text-center">0</td>
+                <td>C<sub>L</sub> + C<sub>M</sub> &#8804; 3/8, C<sub>H</sub> &#8804; 5/8 or any fog confined to dawn period</td>
+              </tr>
+              <tr>
+                <td class="text-center">1</td>
+                <td>C<sub>L</sub> + C<sub>M</sub> + C<sub>H</sub> &#61; 4/8-6/8 or any fog clearing slowly during morning</td>
+              </tr>
+              <tr>
+                <td class="text-center">2</td>
+                <td>C<sub>L</sub> + C<sub>M</sub> &#8805; 6/8 or any fog clearing before noon</td>
+              </tr>
+                 <tr>
+                <td class="text-center">3</td>
+                <td>Predominantly overcast with precipitation (not including very slight drizzle) or persistent fog</td>
+              </tr>
+            </table>
+        </div>
+
+        <div class="col-md-8 mx-auto text-right float-right">
+            <figure class="figure">
+            <img src="/images/callen_curve.png"
+                alt="Correction graph">
+            </figure>
+        </div>
+        <br><br>
+
+        <div class="col-md-12 mx-auto text-right float-right">
+            <table class="table table-striped">
+                <caption class="text-left"><p><i>Unadjusted maximum temperature (&degC) from thickness (gpm):</i></p></caption>
+                <tr>
+                    <td></td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>4</td>
+                  <td>5</td>
+                  <td>6</td>
+                  <td>7</td>
+                  <td>8</td>
+                  <td>9</td>
+               </tr>
+               <tr>
+                   <td><b>1220</b></td>
+                  <td>-2.3</td>
+                  <td>-2.2</td>
+                  <td>-2.0</td>
+                  <td>-1.9</td>
+                  <td>-1.7</td>
+                  <td>-1.6</td>
+                  <td>-1.4</td>
+                  <td>-1.2</td>
+                  <td>-1.1</td>
+                  <td>-0.9</td>
+               </tr>
+               <tr>
+                   <td><b>1230</b></td>
+                  <td>-0.8</td>
+                  <td>-0.6</td>
+                  <td>-0.5</td>
+                  <td>-0.3</td>
+                  <td>-0.1</td>
+                  <td>0.0</td>
+                  <td>0.2</td>
+                  <td>0.3</td>
+                  <td>0.5</td>
+                  <td>0.6</td>
+               </tr>
+               <tr>
+                   <td><b>1240</b></td>
+                  <td>0.8</td>
+                  <td>0.9</td>
+                  <td>1.1</td>
+                  <td>1.3</td>
+                  <td>1.4</td>
+                  <td>1.6</td>
+                  <td>1.7</td>
+                  <td>1.9</td>
+                  <td>2.0</td>
+                  <td>2.2</td>
+               </tr>
+               <tr>
+                   <td><b>1250</b></td>
+                  <td>2.3</td>
+                  <td>2.5</td>
+                  <td>2.7</td>
+                  <td>2.8</td>
+                  <td>3.0</td>
+                  <td>3.1</td>
+                  <td>3.3</td>
+                  <td>3.4</td>
+                  <td>3.6</td>
+                  <td>3.8</td>
+               </tr>
+               <tr>
+                   <td><b>1260</b></td>
+                  <td>3.9</td>
+                  <td>4.1</td>
+                  <td>4.2</td>
+                  <td>4.4</td>
+                  <td>4.5</td>
+                  <td>4.7</td>
+                  <td>4.8</td>
+                  <td>5.0</td>
+                  <td>5.2</td>
+                  <td>5.3</td>
+               </tr>
+               <tr>
+                   <td><b>1270</b></td>
+                  <td>5.5</td>
+                  <td>5.6</td>
+                  <td>5.8</td>
+                  <td>5.9</td>
+                  <td>6.1</td>
+                  <td>6.3</td>
+                  <td>6.4</td>
+                  <td>6.6</td>
+                  <td>6.7</td>
+                  <td>6.9</td>
+               </tr>
+               <tr>
+                   <td><b>1280</b></td>
+                  <td>7.0</td>
+                  <td>7.2</td>
+                  <td>7.3</td>
+                  <td>7.5</td>
+                  <td>7.7</td>
+                  <td>7.8</td>
+                  <td>8.0</td>
+                  <td>8.1</td>
+                  <td>8.3</td>
+                  <td>8.4</td>
+               </tr>
+               <tr>
+                   <td><b>1290</b></td>
+                  <td>8.6</td>
+                  <td>8.7</td>
+                  <td>8.9</td>
+                  <td>9.1</td>
+                  <td>9.2</td>
+                  <td>9.4</td>
+                  <td>9.5</td>
+                  <td>9.7</td>
+                  <td>9.8</td>
+                  <td>10.0</td>
+               </tr>
+               <tr>
+                   <td><b>1300</b></td>
+                  <td>10.2</td>
+                  <td>10.3</td>
+                  <td>10.5</td>
+                  <td>10.6</td>
+                  <td>10.8</td>
+                  <td>10.9</td>
+                  <td>11.1</td>
+                  <td>11.2</td>
+                  <td>11.4</td>
+                  <td>11.6</td>
+               </tr>
+               <tr>
+                   <td><b>1310</b></td>
+                  <td>11.7</td>
+                  <td>11.9</td>
+                  <td>12.0</td>
+                  <td>12.2</td>
+                  <td>12.3</td>
+                  <td>12.5</td>
+                  <td>12.6</td>
+                  <td>12.8</td>
+                  <td>13.0</td>
+                  <td>13.1</td>
+               </tr>
+               <tr>
+                   <td><b>1320</b></td>
+                  <td>13.3</td>
+                  <td>13.4</td>
+                  <td>13.6</td>
+                  <td>13.7</td>
+                  <td>13.9</td>
+                  <td>14.1</td>
+                  <td>14.2</td>
+                  <td>14.4</td>
+                  <td>14.5</td>
+                  <td>14.7</td>
+               </tr>
+               <tr>
+                   <td><b>1330</b></td>
+                  <td>14.8</td>
+                  <td>15.0</td>
+                  <td>15.1</td>
+                  <td>15.3</td>
+                  <td>15.5</td>
+                  <td>15.6</td>
+                  <td>15.8</td>
+                  <td>15.9</td>
+                  <td>16.1</td>
+                  <td>16.2</td>
+               </tr>
+               <tr>
+                   <td><b>1340</b></td>
+                  <td>16.4</td>
+                  <td>16.5</td>
+                  <td>16.7</td>
+                  <td>16.9</td>
+                  <td>17.0</td>
+                  <td>17.2</td>
+                  <td>17.3</td>
+                  <td>17.5</td>
+                  <td>17.6</td>
+                  <td>17.8</td>
+               </tr>
+               <tr>
+                   <td><b>1350</b></td>
+                  <td>18.0</td>
+                  <td>18.1</td>
+                  <td>18.3</td>
+                  <td>18.4</td>
+                  <td>18.6</td>
+                  <td>18.7</td>
+                  <td>18.9</td>
+                  <td>19.0</td>
+                  <td>19.2</td>
+                  <td>19.4</td>
+               </tr>
+               <tr>
+                   <td><b>1360</b></td>
+                  <td>19.5</td>
+                  <td>19.7</td>
+                  <td>19.8</td>
+                  <td>20.0</td>
+                  <td>20.1</td>
+                  <td>20.3</td>
+                  <td>20.4</td>
+                  <td>20.6</td>
+                  <td>20.8</td>
+                  <td>20.9</td>
+               </tr>
+               <tr>
+                   <td><b>1370</b></td>
+                  <td>21.1</td>
+                  <td>21.2</td>
+                  <td>21.4</td>
+                  <td>21.5</td>
+                  <td>21.7</td>
+                  <td>21.9</td>
+                  <td>22.0</td>
+                  <td>22.2</td>
+                  <td>22.3</td>
+                  <td>22.5</td>
+               </tr>
+               <tr>
+                   <td><b>1380</b></td>
+                  <td>22.6</td>
+                  <td>22.8</td>
+                  <td>22.9</td>
+                  <td>23.1</td>
+                  <td>23.3</td>
+                  <td>23.4</td>
+                  <td>23.6</td>
+                  <td>23.7</td>
+                  <td>23.9</td>
+                  <td>24.0</td>
+               </tr>
+               <tr>
+                   <td><b>1390</b></td>
+                  <td>24.2</td>
+                  <td>24.3</td>
+                  <td>24.5</td>
+                  <td>24.7</td>
+                  <td>24.8</td>
+                  <td>25.0</td>
+                  <td>25.1</td>
+                  <td>25.3</td>
+                  <td>25.4</td>
+                  <td>25.6</td>
+               </tr>
+               <tr>
+                   <td><b>1400</b></td>
+                  <td>25.8</td>
+                  <td>25.9</td>
+                  <td>26.1</td>
+                  <td>26.2</td>
+                  <td>26.4</td>
+                  <td>26.5</td>
+                  <td>26.7</td>
+                  <td>26.8</td>
+                  <td>27.0</td>
+                  <td>27.2</td>
+               </tr>
+               <tr>
+                   <td><b>1410</b></td>
+                  <td>27.3</td>
+                  <td>27.5</td>
+                  <td>27.6</td>
+                  <td>27.8</td>
+                  <td>27.9</td>
+                  <td>28.1</td>
+                  <td>28.2</td>
+                  <td>28.4</td>
+                  <td>28.6</td>
+                  <td>28.7</td>
+               </tr>
+               <tr>
+                   <td><b>1420</b></td>
+                  <td>28.9</td>
+                  <td>29.0</td>
+                  <td>29.2</td>
+                  <td>29.3</td>
+                  <td>29.5</td>
+                  <td>29.7</td>
+                  <td>29.8</td>
+                  <td>30.0</td>
+                  <td>30.1</td>
+                  <td>30.3</td>
+               </tr>
+               <tr>
+                   <td><b>1430</b></td>
+                  <td>30.4</td>
+                  <td>30.6</td>
+                  <td>30.7</td>
+                  <td>30.9</td>
+                  <td>31.1</td>
+                  <td>31.2</td>
+                  <td>31.4</td>
+                  <td>31.5</td>
+                  <td>31.7</td>
+                  <td>31.8</td>
+               </tr>
+               <tr>
+                   <td><b>1440</b></td>
+                  <td>32.0</td>
+                  <td>32.1</td>
+                  <td>32.3</td>
+                  <td>32.5</td>
+                  <td>32.6</td>
+                  <td>32.8</td>
+                  <td>32.9</td>
+                  <td>33.1</td>
+                  <td>33.2</td>
+                  <td>33.4</td>
+               </tr>
+               <tr>
+                   <td><b>1450</b></td>
+                  <td>33.6</td>
+                  <td>33.7</td>
+                  <td>33.9</td>
+                  <td>34.0</td>
+                  <td>34.2</td>
+                  <td>34.3</td>
+                  <td>34.5</td>
+                  <td>34.6</td>
+                  <td>34.8</td>
+                  <td>35.0</td>
+               </tr>
+               <tr>
+                   <td><b>1460</b></td>
+                  <td>35.1</td>
+                  <td>35.3</td>
+                  <td>35.4</td>
+                  <td>35.6</td>
+                  <td>35.7</td>
+                  <td>35.9</td>
+                  <td>36.0</td>
+                  <td>36.2</td>
+                  <td>36.4</td>
+                  <td>36.5</td>
+               </tr>
+               <tr>
+                   <td><b>1470</b></td>
+                  <td>36.7</td>
+                  <td>36.8</td>
+                  <td>37.0</td>
+                  <td>37.1</td>
+                  <td>37.3</td>
+                  <td>37.5</td>
+                  <td>37.6</td>
+                  <td>37.8</td>
+                  <td>37.9</td>
+                  <td>38.1</td>
+               </tr>
+               <tr>
+                   <td><b>1480</b></td>
+                  <td>38.2</td>
+                  <td>38.4</td>
+                  <td>38.5</td>
+                  <td>38.7</td>
+                  <td>38.9</td>
+                  <td>39.0</td>
+                  <td>39.2</td>
+                  <td>39.3</td>
+                  <td>39.5</td>
+                  <td>39.6</td>
+               </tr>
+               <tr>
+                   <td><b>1490</b></td>
+                  <td>39.8</td>
+                  <td>39.9</td>
+                  <td>40.1</td>
+                  <td>40.3</td>
+                  <td>40.4</td>
+                  <td>40.6</td>
+                  <td>40.7</td>
+                  <td>40.9</td>
+                  <td>41.0</td>
+                  <td>41.2</td>
+               </tr>
+               <tr>
+                   <td><b>1500</b></td>
+                  <td>41.4</td>
+                  <td>41.5</td>
+                  <td>41.7</td>
+                  <td>41.8</td>
+                  <td>42.0</td>
+                  <td>42.1</td>
+                  <td>42.3</td>
+                  <td>42.4</td>
+                  <td>42.6</td>
+                  <td>42.8</td>
+               </tr>
+            </table>
+        </div>
+    <br><br><br>
+<</div>
+
+<!--The actual calculation-->
+<script>
+    function calculate() {
+        let thickness = parseFloat(document.forms['calcform']['thickness'].value);
+        let date_period = parseFloat(document.forms['calcform']['date_period'].value);
+        let cloud_class = parseFloat(document.forms['calcform']['cloud_class'].value);
+        let correction = correction_calc(date_period, cloud_class);
+        let max_temp = (-192.65 + (0.156 * thickness)) + correction;
+
+        let corr_temp0 = correction_calc(date_period, 0);
+        let corr_temp1 = correction_calc(date_period, 1);
+        let corr_temp2 = correction_calc(date_period, 2);
+        let corr_temp3 = correction_calc(date_period, 3);
+
+        let temp0 = (-192.65 + (0.156 * thickness)) + corr_temp0;
+        let temp1 = (-192.65 + (0.156 * thickness)) + corr_temp1;
+        let temp2 = (-192.65 + (0.156 * thickness)) + corr_temp2;
+        let temp3 = (-192.65 + (0.156 * thickness)) + corr_temp3;
+
+        document.getElementById('max_temp').innerHTML = max_temp.toFixed(1);
+        document.getElementById('temp0').innerHTML = temp0.toFixed(1);
+        document.getElementById('temp1').innerHTML = temp1.toFixed(1);
+        document.getElementById('temp2').innerHTML = temp2.toFixed(1);
+        document.getElementById('temp3').innerHTML = temp3.toFixed(1);
+    }
+
+     function correction_calc(date, cloud) {
+        if (date === 0 && cloud === 0) {
+            return -3.8;
+        }
+        if (date === 0 && cloud === 1) {
+            return -4.3;
+        }
+        if (date === 0 && cloud === 2) {
+            return -5.0;
+        }
+        if (date === 0 && cloud === 3) {
+            return -5.5;
+        }
+
+        if (date === 1 && cloud === 0) {
+            return -3.7;
+        }
+        if (date === 1 && cloud === 1) {
+            return -4.3;
+        }
+        if (date === 1 && cloud === 2) {
+            return -5.0;
+        }
+        if (date === 1 && cloud === 3) {
+            return -5.5;
+        }
+
+        if (date === 2 && cloud === 0) {
+            return -3.5;
+        }
+        if (date === 2 && cloud === 1) {
+            return -4.1;
+        }
+        if (date === 2 && cloud === 2) {
+            return -4.8;
+        }
+        if (date === 2 && cloud === 3) {
+            return -5.3;
+        }
+
+        if (date === 3 && cloud === 0) {
+            return -3.3;
+        }
+        if (date === 3 && cloud === 1) {
+            return -3.9;
+        }
+        if (date === 3 && cloud === 2) {
+            return -4.6;
+        }
+        if (date === 3 && cloud === 3) {
+            return -5.1;
+        }
+
+        if (date === 4 && cloud === 0) {
+            return -3.0;
+        }
+        if (date === 4 && cloud === 1) {
+            return -3.5;
+        }
+        if (date === 4 && cloud === 2) {
+            return -4.3;
+        }
+        if (date === 4 && cloud === 3) {
+            return -5.0;
+        }
+
+        if (date === 5 && cloud === 0) {
+            return -2.5;
+        }
+        if (date === 5 && cloud === 1) {
+            return -3.2;
+        }
+        if (date === 5 && cloud === 2) {
+            return -4.0;
+        }
+        if (date === 5 && cloud === 3) {
+            return -4.7;
+        }
+
+        if (date === 6 && cloud === 0) {
+            return -1.9;
+        }
+        if (date === 6 && cloud === 1) {
+            return -2.7;
+        }
+        if (date === 6 && cloud === 2) {
+            return -3.4;
+        }
+        if (date === 6 && cloud === 3) {
+            return -4.1;
+        }
+
+        if (date === 7 && cloud === 0) {
+            return -1.3;
+        }
+        if (date === 7 && cloud === 1) {
+            return -2.1;
+        }
+        if (date === 7 && cloud === 2) {
+            return -3.0;
+        }
+        if (date === 7 && cloud === 3) {
+            return -3.8;
+        }
+
+        if (date === 8 && cloud === 0) {
+            return -0.8;
+        }
+        if (date === 8 && cloud === 1) {
+            return -1.6;
+        }
+        if (date === 8 && cloud === 2) {
+            return -2.4;
+        }
+        if (date === 8 && cloud === 3) {
+            return -3.3;
+        }
+
+        if (date === 9 && cloud === 0) {
+            return 0.1;
+        }
+        if (date === 9 && cloud === 1) {
+            return -0.9;
+        }
+        if (date === 9 && cloud === 2) {
+            return -1.9;
+        }
+        if (date === 9 && cloud === 3) {
+            return -2.9;
+        }
+
+        if (date === 10 && cloud === 0) {
+            return 0.8;
+        }
+        if (date === 10 && cloud === 1) {
+            return -0.2;
+        }
+        if (date === 10 && cloud === 2) {
+            return -1.2;
+        }
+        if (date === 10 && cloud === 3) {
+            return -2.3;
+        }
+
+        if (date === 11 && cloud === 0) {
+            return 1.3;
+        }
+        if (date === 11 && cloud === 1) {
+            return 0.3;
+        }
+        if (date === 11 && cloud === 2) {
+            return -0.8;
+        }
+        if (date === 11 && cloud === 3) {
+            return -1.9;
+        }
+
+        if (date === 12 && cloud === 0) {
+            return 2.0;
+        }
+        if (date === 12 && cloud === 1) {
+            return 0.9;
+        }
+        if (date === 12 && cloud === 2) {
+            return -0.2;
+        }
+        if (date === 12 && cloud === 3) {
+            return -1.3;
+        }
+
+        if (date === 13 && cloud === 0) {
+            return 2.3;
+        }
+        if (date === 13 && cloud === 1) {
+            return 1.3;
+        }
+        if (date === 13 && cloud === 2) {
+            return 0.1;
+        }
+        if (date === 13 && cloud === 3) {
+            return -1.0;
+        }
+
+        if (date === 14 && cloud === 0) {
+            return 2.8;
+        }
+        if (date === 14 && cloud === 1) {
+            return 1.8;
+        }
+        if (date === 14 && cloud === 2) {
+            return 0.5;
+        }
+        if (date === 14 && cloud === 3) {
+            return -0.7;
+        }
+
+        if (date === 15 && cloud === 0) {
+            return 3.2;
+        }
+        if (date === 15 && cloud === 1) {
+            return 2.1;
+        }
+        if (date === 15 && cloud === 2) {
+            return 0.9;
+        }
+        if (date === 15 && cloud === 3) {
+            return -0.3;
+        }
+
+        if (date === 16 && cloud === 0) {
+            return 3.5;
+        }
+        if (date === 16 && cloud === 1) {
+            return 2.3;
+        }
+        if (date === 16 && cloud === 2) {
+            return 1.2;
+        }
+        if (date === 16 && cloud === 3) {
+            return -0.1;
+        }
+
+        if (date === 17 && cloud === 0) {
+            return 3.8;
+        }
+        if (date === 17 && cloud === 1) {
+            return 2.5;
+        }
+        if (date === 17 && cloud === 2) {
+            return 1.4;
+        }
+        if (date === 17 && cloud === 3) {
+            return 0.1;
+        }
+
+        if (date === 18 && cloud === 0) {
+            return 3.9;
+        }
+        if (date === 18 && cloud === 1) {
+            return 2.5;
+        }
+        if (date === 18 && cloud === 2) {
+            return 1.4;
+        }
+        if (date === 18 && cloud === 3) {
+            return 0.2;
+        }
+
+        if (date === 19 && cloud === 0) {
+            return 3.8;
+        }
+        if (date === 19 && cloud === 1) {
+            return 2.4;
+        }
+        if (date === 19 && cloud === 2) {
+            return 1.3;
+        }
+        if (date === 19 && cloud === 3) {
+            return 0.1;
+        }
+
+        if (date === 20 && cloud === 0) {
+            return 3.6;
+        }
+        if (date === 20 && cloud === 1) {
+            return 2.3;
+        }
+        if (date === 20 && cloud === 2) {
+            return 1.2;
+        }
+        if (date === 20 && cloud === 3) {
+            return 0.0;
+        }
+
+        if (date === 21 && cloud === 0) {
+            return 3.2;
+        }
+        if (date === 21 && cloud === 1) {
+            return 2.1;
+        }
+        if (date === 21 && cloud === 2) {
+            return 1.0;
+        }
+        if (date === 21 && cloud === 3) {
+            return -0.1;
+        }
+
+        if (date === 22 && cloud === 0) {
+            return 2.9;
+        }
+        if (date === 22 && cloud === 1) {
+            return 1.9;
+        }
+        if (date === 22 && cloud === 2) {
+            return 0.8;
+        }
+        if (date === 22 && cloud === 3) {
+            return -0.4;
+        }
+
+        if (date === 23 && cloud === 0) {
+            return 2.4;
+        }
+        if (date === 23 && cloud === 1) {
+            return 1.5;
+        }
+        if (date === 23 && cloud === 2) {
+            return 0.3;
+        }
+        if (date === 23 && cloud === 3) {
+            return -0.8;
+        }
+
+        if (date === 24 && cloud === 0) {
+            return 1.9;
+        }
+        if (date === 24 && cloud === 1) {
+            return 0.9;
+        }
+        if (date === 24 && cloud === 2) {
+            return -0.1;
+        }
+        if (date === 24 && cloud === 3) {
+            return -1.1;
+        }
+
+        if (date === 25 && cloud === 0) {
+            return 1.3;
+        }
+        if (date === 25 && cloud === 1) {
+            return 0.4;
+        }
+        if (date === 25 && cloud === 2) {
+            return -0.6;
+        }
+        if (date === 25 && cloud === 3) {
+            return -1.7;
+        }
+
+        if (date === 26 && cloud === 0) {
+            return 0.7;
+        }
+        if (date === 26 && cloud === 1) {
+            return -0.3;
+        }
+        if (date === 26 && cloud === 2) {
+            return -1.0;
+        }
+        if (date === 26 && cloud === 3) {
+            return -2.0;
+        }
+
+        if (date === 27 && cloud === 0) {
+            return -0.2;
+        }
+        if (date === 27 && cloud === 1) {
+            return -1.0;
+        }
+        if (date === 27 && cloud === 2) {
+            return -1.8;
+        }
+        if (date === 27 && cloud === 3) {
+            return -2.7;
+        }
+
+        if (date === 28 && cloud === 0) {
+            return -0.9;
+        }
+        if (date === 28 && cloud === 1) {
+            return -1.5;
+        }
+        if (date === 28 && cloud === 2) {
+            return -2.3;
+        }
+        if (date === 28 && cloud === 3) {
+            return -3.1;
+        }
+
+        if (date === 29 && cloud === 0) {
+            return -1.4;
+        }
+        if (date === 29 && cloud === 1) {
+            return -2.1;
+        }
+        if (date === 29 && cloud === 2) {
+            return -2.8;
+        }
+        if (date === 29 && cloud === 3) {
+            return -3.6;
+        }
+
+        if (date === 30 && cloud === 0) {
+            return -2.0;
+        }
+        if (date === 30 && cloud === 1) {
+            return -2.8;
+        }
+        if (date === 30 && cloud === 2) {
+            return -3.3;
+        }
+        if (date === 30 && cloud === 3) {
+            return -4.1;
+        }
+
+        if (date === 31 && cloud === 0) {
+            return -2.6;
+        }
+        if (date === 31 && cloud === 1) {
+            return -3.2;
+        }
+        if (date === 31 && cloud === 2) {
+            return -3.8;
+        }
+        if (date === 31 && cloud === 3) {
+            return -4.4;
+        }
+
+        if (date === 32 && cloud === 0) {
+            return -3.1;
+        }
+        if (date === 32 && cloud === 1) {
+            return -3.6;
+        }
+        if (date === 32 && cloud === 2) {
+            return -4.2;
+        }
+        if (date === 32 && cloud === 3) {
+            return -4.9;
+        }
+
+        if (date === 33 && cloud === 0) {
+            return -3.4;
+        }
+        if (date === 33 && cloud === 1) {
+            return -4.0;
+        }
+        if (date === 33 && cloud === 2) {
+            return -4.6;
+        }
+        if (date === 33 && cloud === 3) {
+            return -5.2;
+        }
+
+        if (date === 34 && cloud === 0) {
+            return -3.6;
+        }
+        if (date === 34 && cloud === 1) {
+            return -4.2;
+        }
+        if (date === 34 && cloud === 2) {
+            return -4.8;
+        }
+        if (date === 34 && cloud === 3) {
+            return -5.4;
+        }
+
+        if (date === 35 && cloud === 0) {
+            return -3.8;
+        }
+        if (date === 35 && cloud === 1) {
+            return -4.3;
+        }
+        if (date === 35 && cloud === 2) {
+            return -5.0;
+        }
+        if (date === 35 && cloud === 3) {
+            return -5.5;
+        }
+    }
+</script>

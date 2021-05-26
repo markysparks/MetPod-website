@@ -1,0 +1,89 @@
+---
+title: "Density Altitude (DA) Calculation"
+math: true
+---
+<div class="row">
+    <!--Calculation form density altitude-->
+    <div class="col-md-3">
+        <div class="card card-header border-secondary rounded">
+                <form name="calcform" onsubmit="calculate(); return false;">
+                    <div class="form-group">
+                        <label for="pressure">QFE Pressure (hPa)</label>
+                        <input required type="number" step="any" class="form-control" id="pressure" value="1013.25">
+                    </div>
+                    <div class="form-group">
+                        <label for="temp">Temperature ( &degC)</label>
+                        <input required type="number" step="any" class="form-control" id="temp" value="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="dewpt">Dew Point (&degC)</label>
+                        <input required type="number" step="any" class="form-control" id="dewpt" value="4">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Calculate</button>
+                    </div>
+                    <div class="form-group">
+                        <h5>DA : <label id="da" datatype="number"></label> ft</h5>
+                    </div>
+                </form>
+        </div>
+    </div>
+
+    <!--Description of calculation-->
+    <div class="col-md-9">
+
+            This calculation is based upon the NOAA method detailed in the following article:<p></p>
+
+            <p><a href="https://www.weather.gov/media/epz/wxcalc/densityAltitude.pdf">NOAA density altitude calculation</a></p>
+
+            <p>Note that density altitude is most sensitive to errors in temperature, then pressure and finally dew point. That
+                is to say that dew point has a far lesser impact on density altitude than temperature. The ratio of error
+                magnitude - Temperature : Pressure : Dew point is of the order 8.4 : 3.5 : 1</p>
+
+            <p>Before calculating density altitude, the virtual temperature <var>T<sub>v</sub></var> must be calculated. The air
+                temperature <var>T</var> must be in Kelvin, the station pressure <var>P</var> available in inches of mercury and
+                hectopascals and the dewpoint in degrees C.</p>
+
+                First of all vapour pressure <i>e</i> is calculated:
+                $$e=6.11*10^{\bigg(\frac{7.5 * T_d }{237.7 + T_d}\bigg)}$$
+
+                Then station pressure in hectopascals <i>P<sub>hPa</sub></i> is used to calculate the virtual temperature
+                <i>T<sub>v</sub></i> in Kelvin :
+                $$T_v=\frac{T}{1-\big(\frac{e}{P_{hPa}}\big)*(1-0.622)}$$
+
+                Now we need to convert virtual temperature units from Kelvin to Rankine <i>T<sub>r</sub></i> :
+                $$T_r = \bigg(\frac{9}{5}*(T_v - 273.15)+32\bigg)+459.69$$
+
+                Finally density altitude is calculated using station pressure in inches of mercury <i>P<sub>inHg</sub></i> :
+                $$h_{density}=145366* \bigg(1-\bigg(\frac{17.326*P_{inHg}}{T_r}\bigg)^{0.235}\bigg)$$
+
+            <br><br>
+    </div>
+</div>
+
+<!--The actual calculation-->
+<script>
+    function calculate() {
+        let dewpt = parseFloat(document.forms['calcform']['dewpt'].value);
+        let pressure = parseFloat(document.forms['calcform']['pressure'].value);
+        let temp = parseFloat(document.forms['calcform']['temp'].value);
+
+        let a = 7.5 * dewpt;
+        let b = 237.7 + dewpt;
+        let c = a / b;
+
+        let e = 6.11 * Math.pow(10, c);
+
+        // Virtual Temp in Kelvin
+        let t_v = (temp + 273.15) / (1 - (e / pressure) * (1 - 0.622));
+
+        // Convert to temp to Rankine
+        let t_r = (9 / 5 * (t_v - 273.15) + 32) + 459.69;
+
+        let pressure_hg = pressure * 0.0295;
+
+        let da = 145366 * (1 - Math.pow(((17.326 * pressure_hg) / t_r), 0.235));
+
+        document.getElementById('da').innerHTML = da.toFixed(0);
+    }
+</script>

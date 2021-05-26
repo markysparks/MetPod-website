@@ -1,0 +1,18 @@
+{{- define "main" -}}
+<div class="container bg-light rounded py-2">
+<h5 class="card card-header bg-info text-dark rounded">Meteorological Calculators</h5>
+<p></p>
+
+{{ $pages := .Pages }}
+{{ range $pages.ByTitle }}
+
+    <a href="{{ .Permalink }}"><h6 class="card-header text-dark card-header border-dark rounded">{{ .Title | markdownify }}</h6></a>
+    <p></p>
+    {{ if eq .Site.Params.showPostSummary true }}
+    {{ end }}
+
+{{ end }}
+    <br>
+</div>
+{{- end -}}
+

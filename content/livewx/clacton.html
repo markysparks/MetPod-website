@@ -1,0 +1,129 @@
+---
+title: "Clacton-on-sea"
+aws_graphs: true
+---
+<div class="row">
+    <div class="col-md-10">
+        <div class="card card-body rounded pastel">
+            <div>
+                <div>
+                Observation time <i>(browser time - auto updates)</i>: <b><span class="obstime"></span></b> -
+                    <i><b><span class="timediff"></span></b></i><a style="float: right" href="https://corlysis.com/grafana/?token=125b41e4-7462-4eaa-a293-9e20c09e38b6"><u>Grafana dashboard</u></a><p></p>
+            </div>
+                <h6 class="small"><i>Wind (10 minute mean) - Rainfall total and Max/Min temperatures from 09-09 hrs</i></h6>
+                <div class="form-group row">
+                    <div class="col-md-2">
+                        <label for="winddir">Direction</label>
+                        <input readonly id="winddir" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="windspd">Speed (kts)</label>
+                        <input readonly id="windspd" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="gust">Gust (kts)</label>
+                        <input readonly id="gust" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="rainrate">Rate (mm/hr)</label>
+                        <input readonly id="rainrate" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="total24hr">Total 24hr(mm)</label>
+                        <input readonly id="total24hr" class="form-control text-center bg-light text-dark">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-2">
+                        <label for="temp">Temp &degC</label>
+                        <input readonly id="temp" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="dewpt">Dew Point &degC</label>
+                        <input readonly id="dewpt" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="humid">Humidity %</label>
+                        <input readonly id="humid" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="daymax">Day Max &degC</label>
+                        <input readonly id="daymax" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="nightmin">Night Min &degC</label>
+                        <input readonly id="nightmin" class="form-control text-center bg-light text-dark">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-2">
+                        <label for="pressure">Pressure (hPa)</label>
+                        <input readonly id="pressure" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="qnh">QNH (hPa)</label>
+                        <input readonly id="qnh" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="qfe">QFE (hPa)</label>
+                        <input readonly id="qfe" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="chg3hr">3hr Change</label>
+                        <input readonly id="chg3hr" class="form-control text-center bg-light text-dark">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="trend">Trend code</label>
+                        <input readonly id="trend" class="form-control text-center bg-light text-dark">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card">
+                <img class="card-img rounded" src="/images/clacton_map.png" alt="MetPod Location">
+        </div>
+        <div class="card">
+                <img class="card-img rounded" src="/images/sensors_small.jpeg" alt="MetPod Location">
+        </div>
+    </div>
+</div><br>
+
+<!--Live data graphs-->
+<div class="row">
+    <div class="col-md-12">
+        <canvas id="temperaturegraph" class="inner cover" width="1000" height="180"></canvas>
+        <br />
+    </div>
+
+    <div class="col-md-12">
+        <canvas id="pressuregraph" class="inner cover" width="1000" height="180"></canvas>
+        <br />
+
+    </div>
+
+    <div class="col-md-12">
+        <canvas id="windspdgraph" class="inner cover" width="1000" height="180"></canvas>
+        <br />
+    </div>
+
+    <div class="col-md-12">
+        <canvas id="winddirgraph" class="inner cover" width="1000" height="180"></canvas>
+        <br />
+    </div>
+
+    <div class="col-md-12">
+        <canvas id="rainfallgraph" class="inner cover" width="1000" height="180"></canvas>
+        <br /><br><br>
+    </div>
+</div>
+<br>
+
+<style>
+ .pastel {
+     background-color: #b7d7b1;
+    }
+</style>
